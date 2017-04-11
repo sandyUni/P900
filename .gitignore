@@ -1,0 +1,5 @@
+*.log
+*.json
+dist/*
+build/*
+.vscode/*
