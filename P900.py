@@ -236,18 +236,25 @@ class P900(object):
         
 if __name__ =='__main__':
     # aP900 = P900(2,{'baudrate':57600})
-    aP900 = P900(0,{'baudrate':57600})
+    aP900 = P900(6,{'baudrate':57600})
     # modesettings = {'networkType':'pmp', 
     #             'workMode': 'master',
     #             'wirelessRate':'276480',
-    #             'networkAdress': '1234567101',
-    #             'extraCommands':['ATS109=9','ATS180=3']}
+    #             'networkAdress': '1234567123',
+    #             'baudrate':'57600'}
     modesettings = {'networkType':'pmp', 
                 'workMode': 'slave',
-                'unitAddress':'11',
-                'networkAdress': '1234567891',
+                'unitAddress':'21',
+                'networkAdress': '1234567123',
                 'wirelessRate':'276480',
                 'baudrate':'57600'}
+    # modesettings = {'networkType':'pmp', 
+    #             'workMode': 'slave',
+    #             'unitAddress':'11',
+    #             'networkAdress': '1234567123',
+    #             'wirelessRate':'276480',
+    #             'baudrate':'57600',
+    #             'extraCommands':['ATS109=9','ATS180=3']}
     
     # Mesh Primary
     # modesettings = {'networkType':'mesh', 
