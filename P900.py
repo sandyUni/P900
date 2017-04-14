@@ -5,7 +5,6 @@ from serial.tools.list_ports import  comports
 import re
 import time 
 import sys
-import json
 class P900(object):
     '''
         P900 devices 
@@ -41,7 +40,7 @@ class P900(object):
             time.sleep(3)
             inputSize = self.dev.inWaiting()
             data = self.dev.read(inputSize)
-            print data
+            #print data
             if data.find('NO CARRIER\r\nOK')!=-1:
                 print 'shake hands seccessfully.'
                 self.isInConfigMode = True
@@ -235,19 +234,31 @@ class P900(object):
 
         
 if __name__ =='__main__':
+    import argparse
+    import json
+    # parser = argparse.ArgumentParser(description='Retrive and configure P900')
+    # parser.add_argument('comport', type=int,
+    #                 help='an integer for the serial port')
+    # parser.add_argument('-b','--baudrate',dest='baudrate',type=int,default=57600,
+    #                 help='baudrate(default 57600)')
+    # parser.add_argument('-i','--info',dest='typeinfo',type=bool,
+    #                 help='type information on given port')
+    # parser.add_argument('-c','--config',dest='configFile',type=argparse.FileType('r'),
+    #                 help='config file')
+    
     # aP900 = P900(2,{'baudrate':57600})
-    aP900 = P900(3,{'baudrate':57600})
-    # modesettings = {'networkType':'pmp', 
-    #             'workMode': 'master',
-    #             'wirelessRate':'276480',
-    #             'networkAdress': '2234567123',
-    #             'baudrate':'57600'}
+    aP900 = P900(3,{'baudrate':115200})
     modesettings = {'networkType':'pmp', 
-                'workMode': 'slave',
-                'unitAddress':'33',
-                'networkAdress': '2234567123',
+                'workMode': 'master',
                 'wirelessRate':'276480',
-                'baudrate':'57600'}
+                'networkAdress': '6768739281',
+                'baudrate':'115200'}
+    # modesettings = {'networkType':'pmp', 
+    #             'workMode': 'slave',
+    #             'unitAddress':'33',
+    #             'networkAdress': '2234567123',
+    #             'wirelessRate':'276480',
+    #             'baudrate':'57600'}
     # modesettings = {'networkType':'pmp', 
     #             'workMode': 'slave',
     #             'unitAddress':'11',

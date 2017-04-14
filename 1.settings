@@ -1,0 +1,30 @@
+shake hands seccessfully.
+at&v
+p900
+900MHz Mesh Radio Microhard Systems, Inc.
+v1.27 build 1.1463 Sep 26 2016 17:49:02
+MAC: 00:0F:92:FA:8A:A9
+
+E1  Q0  DCD &C1  DTR &D0  Handshaking &K0  DSR &S1
+Unit Address           S105=6                
+Destination Address    S140=1                
+Reverse RSSI leds      S88=0            Operating Mode         S101=2
+Serial Baud Rate       S102=2           Wireless Link Rate     S103=0
+Network Address        S104=1234567891  Hop Pattern            S106=0
+Hop Zone               S180=0           Output Power(dBm)      S108=30
+Hop Interval           S109=9           Data Format            S110=1
+Packet Min Size        S111=1           Packet Max Size        S112=256
+Packet Retransmissions S113=3           Repeat Interval        S115=3
+Character Timeout      S116=10          Roaming                S118=1
+RSSI from Uplink(dBm)  S123=-45         Network Type           S133=0
+Serial Channel Mode    S142=0           Sleep mode             S143=0
+Address Tag            S153=0           FEC Mode               S158=7
+Protocol Type          S217=0           Input Framing          S218=0
+Sync timeout           S248=512
+OK
+
+ata
+OK
+CONNECT 57600
+
+leave config mode seccessfully
