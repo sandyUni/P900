@@ -15,61 +15,113 @@ import random
     # dev
     # blockedTransmit 
 
-global globalSettings = dict()
-
+globalSettings =dict()
 def speedoutput(args):
     global globalSettings
+    if  globalSettings['datatransmitEnable']:
+        dataTransmitedQuene5 = list()
+        lastdataTransmited   = 0 
+    dataRevQuene5 = list()
+    lastreceivedDataAmount = 0
     while True:
-        if globalSettings['datatransmitedEnabled']:
-            pass
-        sleep(1)
+        if globalSettings['work'] == False:
+            return 0
+        timeNow  =  time.time()
+        if globalSettings['datatransmitStarted']:
+            dataTransmited = globalSettings['dataTransmited']
+            dataTransmitedQuene5.insert(0,dataTransmited-lastdataTransmited)
+            if len(dataTransmitedQuene5)>5:
+                dataTransmitedQuene5.pop()
+            transmitStartTime = globalSettings['transmitStartTime']
+            totalSpeed = dataTransmited/(timeNow-transmitStartTime)
+            currentSpeed5=sum(dataTransmitedQuene5)/len(dataTransmitedQuene5)
+            print 'transmitSpeed/currentSpeed::%.3f Bytes/s (%.3f);dataAmount: %d'%(totalSpeed,currentSpeed5,dataTransmited)
+            lastdataTransmited = dataTransmited
+        
+        receivedDataAmount  = globalSettings['receivedDataAmount']
+        dataRevQuene5.insert(0,receivedDataAmount-lastreceivedDataAmount)
+        if len(dataRevQuene5)>5:
+                dataRevQuene5.pop()
+        currentRecSpeed5=sum(dataRevQuene5)/len(dataRevQuene5)
+
+        dataSpeed = receivedDataAmount / (timeNow-globalSettings['startTime'])
+        print 'dataSpeed/(rts):%.3f Bytes/s (%.3f);dataAmount: %d'%(dataSpeed,currentRecSpeed5,receivedDataAmount)
+        lastreceivedDataAmount = receivedDataAmount
+        time.sleep(1)
 
 def readThread(args):
-    f = open(args.outputfile,'w')
+    f = open(args['outputfile'],'w')
     receivedDataAmount = 0 
     while True:
+        if globalSettings['work'] == False:
+            f.close()
+            return 0
         inputSize = globalSettings['dev'].inWaiting()
         receivedDataAmount = receivedDataAmount + inputSize
         data = globalSettings['dev'].read(inputSize)
         f.write(data)
         now  = time.time()
         globalSettings['receivedDataAmount'] = receivedDataAmount 
-        sleep(0.1)
+        time.sleep(0.1)
 
 def transmitThread(args):
     global globalSettings
+    time.sleep(args['transmitdelay'])
     transmitEnable = True
     startTime = time.time()
     sleepTime = 0.1
+    bufferPoint  = 0  
+    haveDatatoTrans = True
+    transmitTimes = 0
+    dataTransmited = long(0)
+    globalSettings['dataTransmited'] = dataTransmited
+    if args['blocked'] or (args['randomMax'] is None) == False or (args['transmitFreq'] is None) ==False:
+        blockedTransmit = True
+    else:
+        blockedTransmit = False
+
+    expectedSpeed = parse_size(args['transmitSpeed'],binary=True)
+
+    if (args['inputfile'] is None) == False:
+        if inputfileSize < 10000:
+            if inputfileSize == 0:
+                transmitEnable = False
+            transmitdataBuffer =  inputf.read()
+            inputf.close()
+            dataBuffered = True
+            bufferPoint  = 0 
+        else:
+            if blockedTransmit == True:
+                raise Exception('File is too large to transmit blockly(should small than 10kB)')
+            dataBuffered = False
+    else:
+        transmitdataBuffer = args['transmitStr']
+        dataBuffered = True
+        bufferPoint = 0
+    globalSettings['transmitStartTime'] == time.time()
+    time.sleep(0.1)
     while True:
-        if transmitStart ==False:
-            thisTime = time.time()
-            if thisTime-  startTime > args.transmitdelay: # TODO transmit time delay should use in main thread
-                transmitStart = True
-                startTime = thisTime
-                globalSettings['dataTransmited'] = 0 
-                dataTransmited = 0 
-                # transmit segment
-        
-        if transmitEnable and haveDatatoTrans and transmitStart:
-            globalSettings['datatransmitedEnabled'] = True
-            if args.zeroBuffer:
+        if globalSettings['work'] == False:
+            return 0
+        if transmitEnable and haveDatatoTrans:
+            globalSettings['datatransmitStarted'] = True
+            if args['zeroBuffer']:
                 bufferThreshold = 0
             else:
                 bufferThreshold = 100
             if globalSettings['dev'].out_waiting <= bufferThreshold:
                 data = None
-                if global['blockedTransmit']:
+                if blockedTransmit:
                     data = transmitdataBuffer
                     transmitTimes = transmitTimes +1 
-                    if transmitTimes ==  args.number:
+                    if transmitTimes ==  args['number']:
                         haveDatatoTrans = False
                         sleepTime = 0.1
                     else:
-                        if (args.transmitFreq is None) ==False:
-                            sleepTime = 1.0 / args.transmitFreq
-                        elif (args.randomMax is None ) == False:
-                            sleepTime = random.uniform(args.randomMin,args.randomMax)
+                        if (args['transmitFreq'] is None) ==False:
+                            sleepTime = 1.0 / args['transmitFreq']
+                        elif (args['randomMax'] is None ) == False:
+                            sleepTime = random.uniform(args['randomMin'],args['randomMax'])
                         else:
                             sleepTime = 1.0
                 else:
@@ -82,18 +134,18 @@ def transmitThread(args):
                                 bufferPoint = bufferPoint +100-1
                             else:
                                 transmitTimes = transmitTimes +1 
-                                if transmitTimes < args.number:
+                                if transmitTimes < args['number']:
                                     data = transmitdataBuffer[bufferPoint:len(transmitdataBuffer)]
                                     while True:
                                         dataWantedLen = 100 - len(data)
                                         if dataWantedLen > len(transmitdataBuffer):
                                             data = data + transmitdataBuffer
                                             transmitTimes = transmitTimes + 1 
-                                            if transmitTimes == args.number:
+                                            if transmitTimes == args['number']:
                                                 break
                                         else:
                                             break
-                                    if transmitTimes != args.number: 
+                                    if transmitTimes != args['number']: 
                                         data = data + transmitdataBuffer[0:dataWantedLen]
                                         bufferPoint = dataWantedLen
                                     else:
@@ -107,7 +159,7 @@ def transmitThread(args):
                                 data = tmpdata
                             else:
                                 transmitTimes = transmitTimes + 1 
-                                if transmitTimes<args.number:
+                                if transmitTimes<args['number']:
                                     inputf.seek(0)
                                     data = tmpdata +inputf.read(100-len(tmpdata))
                                 else:
@@ -118,10 +170,10 @@ def transmitThread(args):
                     globalSettings['dataTransmited']=dataTransmited
         elif transmitEnable ==True and haveDatatoTrans == False:
             transmitEnable = False
-            globalSettings['datatransmitedEnabled'] = False
+            globalSettings['datatransmitStarted'] = False
             print 'data transmitted'
             return (0)
-        sleep(sleepTime)
+        time.sleep(sleepTime)
 
         
 if __name__ == '__main__':
@@ -140,40 +192,33 @@ if __name__ == '__main__':
                     help='transmit times, default:1')
     parser.add_argument('-t','--transmit',type=str,dest='transmitStr',
                     help='transmit string')
-    parser.add_argument('-k','--blocked',type=bool,dest='blocked',default=False,
-                    help='tranmit data blockly, instead of streamly')
+    parser.add_argument('-k','--blocked',dest='blocked',default= False,action='store_const',                          const=True, help='tranmit data blockly, instead of streamly')
     parser.add_argument('-d','--delay',type=float,dest='transmitdelay',default= 5.0,
                     help='transmit delay, default 5s')
     parser.add_argument('-f','--freq',type=float,dest='transmitFreq',
                     help='transmit frequency for transmit string. If this argument is set, BLOCKED will aumatically be set to True')
-    parser.add_argument('-r','--random',type=bool,
-                    help='Set to transmit data in a random frequency.')
     parser.add_argument('--random-max',type=float,dest='randomMax',help='the max frequency in the randomly-transmit mode')
     parser.add_argument('--random-min',type=float,dest='randomMin',help='the minimum frequency in the randomly-transmit mode')
-    parser.add_argument('-z','--zero',type=bool,dest='zeroBuffer',default=False,
-                    help='send new data when buffer is empty, default: False')
+    parser.add_argument('-z','--zero',dest='zeroBuffer',default= False,action='store_const',                          const=True, help='send new data untill buffer is empty, default: False')
     args = parser.parse_args()
-    
+    print args
     #some argument constraints should be added SS
     if (args.randomMin is None)!=True:
         if args.randomMax is None:
             raise Exception('--random-max and --random-min should be defined simultaneously')
-        elif (args.random is None) == False:
-            raise Exception('--random-max and --random-min are isolated by -r')
+        elif (args.transmitFreq is None) == False:
+            raise Exception('--random-max and --random-min are isolated by -f')
     elif (args.randomMax is None)!=True:
         raise Exception('randomMax and randomMin should be defined simultaneously')
     
     # some initialization
-    globalSettings['datatransmitedEnabled'] = False
-    if args.blocked or (args.randomMax is None) == False or (args.transmitFreq is None) ==False:
-        blockedTransmit = True
+    globalSettings['datatransmitStarted'] = False
 
 
     filename = args.outputfile
     if filename is None:
         raise Exception('Should give me a file to save data')
     
-
     inputf = None
     transmitEnable = False
     if (args.inputfile is None) == False:
@@ -188,9 +233,6 @@ if __name__ == '__main__':
             raise Exception('Don\'t support transmit string and file simultaneously')
         transmitEnable = True
     
-    if transmitEnable == True:
-        expectedSpeed = parse_size(args.transmitSpeed,binary=True)
-
     port = str(args.comport)
     # try:
     if sys.platform == 'win32':
@@ -201,125 +243,24 @@ if __name__ == '__main__':
     globalSettings['dev'] = dev
 
     startTime = time.time()
-    receivedDataAmount =0 
-    secondSegment =  0 
-    lastSecond = startTime
-    receivedDataAmountSecond = 0
-    haveDatatoTrans = True
-    transmitTimes   = 0
-    dataBuffered = False
-    if (args.inputfile is None) == False:
-        if inputfileSize < 10000:
-            if inputfileSize == 0:
-                transmitEnable = False
-            transmitdataBuffer =  inputf.read()
-            inputf.close()
-            dataBuffered = True
-            bufferPoint  = 0 
-        else:
-            if blockedTransmit == True:
-                raise Exception('File is too large to transmit blockly(should small than 10kB)')
-            dataBuffered = False
-    else:
-        transmitdataBuffer = args.transmitStr
-        dataBuffered = True
-        bufferPoint = 0
-
-    dataTransmited = long(0)
-    startTime = time.time()
     globalSettings['startTime']=startTime
-    transmitStart = False
-    sleepTime  =  0.1 
-    while True:
-        # if transmitStart ==False:
-        #     thisTime = time.time()
-        #     if thisTime-  startTime > args.transmitdelay:
-        #         transmitStart = True
-        #         startTime = thisTime
-        # secondSegment = secondSegment +1 
-        # time.sleep(sleepTime)
-        inputSize = dev.inWaiting()
-        receivedDataAmount = receivedDataAmount + inputSize
-        receivedDataAmountSecond  = receivedDataAmountSecond + inputSize
-        data = dev.read(inputSize)
-        f.write(data)
-        now  = time.time()
-        dataSpeed = receivedDataAmount/(now-startTime)
-        if(secondSegment==10):
-            secondTime = time.time() 
-            secondSegment = 0
-            print 'dataSpeed/(rts):%.3f Bytes/s (%.3f);dataAmount: %d'%(dataSpeed,(receivedDataAmountSecond)/(secondTime-lastSecond),receivedDataAmount)
-            lastSecond = secondTime
-            receivedDataAmountSecond =0
-            if transmitEnable and haveDatatoTrans and transmitStart:
-                nowtime = time.time() 
-                curentSpeed =float(dataTransmited)/( nowtime-startTime)
-                print 'current transmit speed: %0.3f'%curentSpeed
-        
-        # transmit segment
-        if transmitEnable and haveDatatoTrans and transmitStart:
-            globalSettings['datatransmitedEnabled'] = True
-            if args.zeroBuffer:
-                bufferThreshold = 0
-            else:
-                bufferThreshold = 100
-            if dev.out_waiting <= bufferThreshold:
-                nowtime = time.time()
-                curentSpeed =float(dataTransmited)/( nowtime-startTime)
-                if curentSpeed < expectedSpeed: #transmit data
-                    data = None
-                    if dataBuffered:
-                        if blockedTransmit: 
-                            data = transmitdataBuffer
-                            transmitTimes = transmitTimes +1 
-                            if transmitTimes ==  args.number:
-                                haveDatatoTrans = False
-                        else:
-                            if bufferPoint+100 <= len(transmitdataBuffer):
-                                data = transmitdataBuffer[bufferPoint:(bufferPoint+100)]
-                                bufferPoint = bufferPoint +100-1
-                            else:
-                                transmitTimes = transmitTimes +1 
-                                if transmitTimes < args.number:
-                                    data = transmitdataBuffer[bufferPoint:len(transmitdataBuffer)]
-                                    while True:
-                                        dataWantedLen = 100 - len(data)
-                                        if dataWantedLen > len(transmitdataBuffer):
-                                            data = data + transmitdataBuffer
-                                            transmitTimes = transmitTimes + 1 
-                                            if transmitTimes == args.number:
-                                                break
-                                        else:
-                                            break
-                                    if transmitTimes != args.number: 
-                                        data = data + transmitdataBuffer[0:dataWantedLen]
-                                        bufferPoint = dataWantedLen
-                                    else:
-                                        haveDatatoTrans = False
-                                else:
-                                    data = transmitdataBuffer[bufferPoint:len(transmitdataBuffer)]
-                                    haveDatatoTrans = False
-                    else:
-                        tmpdata = inputf.read(100)
-                        if len(tmpdata)!=0:
-                            data = tmpdata
-                        else:
-                            transmitTimes = transmitTimes + 1 
-                            if transmitTimes<args.number:
-                                inputf.seek(0)
-                                data = tmpdata +inputf.read(100-len(tmpdata))
-                            else:
-                                haveDatatoTrans = False
-                    if (data is None) == False:
-                        dev.write(data)
-                        dataTransmited=dataTransmited + len(data)
-        elif transmitEnable ==True and haveDatatoTrans == False:
-            transmitEnable = False
-            globalSettings['datatransmitedEnabled'] = False
-            print 'data transmitted'
+    globalSettings['work'] = True
+    globalSettings['transmitStartTime'] = startTime
 
-    # except exce: 
-    #     print 'exiting:',exce   
-    #     if (args.inputfile is None) == False and dataBuffered ==False:
-    #         inputf.close() 
-    #     f.close()
+    # convert args to tuple
+    argsDictTuple = tuple([vars(args)])
+    print argsDictTuple
+    globalSettings['receivedDataAmount'] = 0 
+    thread.start_new_thread(readThread,argsDictTuple)
+    
+
+    if transmitEnable:
+        thread.start_new_thread(transmitThread,argsDictTuple)
+        globalSettings['datatransmitEnable'] = True
+    thread.start_new_thread(speedoutput,argsDictTuple)
+    try:
+        while True:
+            time.sleep(1)
+            
+    except:
+        globalSettings['work'] = False
