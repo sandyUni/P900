@@ -69,7 +69,7 @@ def transmitThread(args):
     time.sleep(args['transmitdelay'])
     transmitEnable = True
     startTime = time.time()
-    sleepTime = 0.1
+    sleepTime = 0.01
     bufferPoint  = 0  
     haveDatatoTrans = True
     transmitTimes = 0
@@ -108,7 +108,8 @@ def transmitThread(args):
             if args['zeroBuffer']:
                 bufferThreshold = 0
             else:
-                bufferThreshold = 100
+                bufferThreshold = 1000
+            # print "out_wait:%d"%(globalSettings['dev'].out_waiting)
             if globalSettings['dev'].out_waiting <= bufferThreshold:
                 data = None
                 if blockedTransmit:
@@ -121,23 +122,28 @@ def transmitThread(args):
                         if (args['transmitFreq'] is None) ==False:
                             sleepTime = 1.0 / args['transmitFreq']
                         elif (args['randomMax'] is None ) == False:
-                            sleepTime = random.uniform(args['randomMin'],args['randomMax'])
+                            sleepTime = 1.0/random.uniform(args['randomMin'],args['randomMax'])
+                        elif (args['transmitSpeed'] is None)  == False:
+                            nowtime = time.time()
+                            datalen = len(data)
+                            sleepTime =max(0.001,float(dataTransmited+datalen)/expectedSpeed - (nowtime-startTime))
                         else:
                             sleepTime = 1.0
                 else:
                     nowtime = time.time()
                     curentSpeed =float(dataTransmited)/( nowtime-startTime)
+                    transmitChunk = 320
                     if curentSpeed < expectedSpeed: #transmit data
                         if dataBuffered:
-                            if bufferPoint+100 <= len(transmitdataBuffer):
-                                data = transmitdataBuffer[bufferPoint:(bufferPoint+100)]
-                                bufferPoint = bufferPoint +100-1
+                            if bufferPoint+transmitChunk <= len(transmitdataBuffer):
+                                data = transmitdataBuffer[bufferPoint:(bufferPoint+transmitChunk)]
+                                bufferPoint = bufferPoint +transmitChunk
                             else:
                                 transmitTimes = transmitTimes +1 
                                 if transmitTimes < args['number']:
                                     data = transmitdataBuffer[bufferPoint:len(transmitdataBuffer)]
                                     while True:
-                                        dataWantedLen = 100 - len(data)
+                                        dataWantedLen = transmitChunk - len(data)
                                         if dataWantedLen > len(transmitdataBuffer):
                                             data = data + transmitdataBuffer
                                             transmitTimes = transmitTimes + 1 
@@ -154,18 +160,20 @@ def transmitThread(args):
                                     data = transmitdataBuffer[bufferPoint:len(transmitdataBuffer)]
                                     haveDatatoTrans = False
                         else:
-                            tmpdata = inputf.read(100)
+                            tmpdata = inputf.read(transmitChunk)
                             if len(tmpdata)!=0:
                                 data = tmpdata
                             else:
                                 transmitTimes = transmitTimes + 1 
                                 if transmitTimes<args['number']:
                                     inputf.seek(0)
-                                    data = tmpdata +inputf.read(100-len(tmpdata))
+                                    data = tmpdata +inputf.read(transmitChunk-len(tmpdata))
                                 else:
                                     haveDatatoTrans = False
                 if (data is None) == False:
                     dev.write(data)
+                    # print bufferThreshold
+                    
                     dataTransmited=dataTransmited + len(data)
                     globalSettings['dataTransmited']=dataTransmited
         elif transmitEnable ==True and haveDatatoTrans == False:
@@ -257,6 +265,8 @@ if __name__ == '__main__':
     if transmitEnable:
         thread.start_new_thread(transmitThread,argsDictTuple)
         globalSettings['datatransmitEnable'] = True
+    else:
+        globalSettings['datatransmitEnable'] = False
     thread.start_new_thread(speedoutput,argsDictTuple)
     try:
         while True:
