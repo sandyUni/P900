@@ -127,6 +127,7 @@ def transmitThread(args):
                             nowtime = time.time()
                             datalen = len(data)
                             sleepTime =max(0.001,float(dataTransmited+datalen)/expectedSpeed - (nowtime-startTime))
+                            # print sleepTime
                         else:
                             sleepTime = 1.0
                 else:
@@ -179,7 +180,7 @@ def transmitThread(args):
         elif transmitEnable ==True and haveDatatoTrans == False:
             transmitEnable = False
             globalSettings['datatransmitStarted'] = False
-            print 'data transmitted'
+            print 'data transmitted:%d'%dataTransmited
             return (0)
         time.sleep(sleepTime)
 
@@ -209,7 +210,7 @@ if __name__ == '__main__':
     parser.add_argument('--random-min',type=float,dest='randomMin',help='the minimum frequency in the randomly-transmit mode')
     parser.add_argument('-z','--zero',dest='zeroBuffer',default= False,action='store_const',                          const=True, help='send new data untill buffer is empty, default: False')
     args = parser.parse_args()
-    print args
+    # print args
     #some argument constraints should be added SS
     if (args.randomMin is None)!=True:
         if args.randomMax is None:

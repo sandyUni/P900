@@ -247,20 +247,20 @@ if __name__ =='__main__':
     #                 help='config file')
     
     # aP900 = P900(2,{'baudrate':57600})
-    aP900 = P900(4,{'baudrate':57600})
-    modesettings = {'networkType':'pmp', 
-                'workMode': 'master',
-                'wirelessRate':'276480',
-                'networkAdress': '2318174941',
-                'baudrate':'57600',
-                'extraCommands':['ATS108=20']}
+    aP900 = P900(3,{'baudrate':115200})
     # modesettings = {'networkType':'pmp', 
-    #             'workMode': 'slave',
-    #             'unitAddress':'3',
-    #             'networkAdress': '2318174941',
+    #             'workMode': 'master',
     #             'wirelessRate':'276480',
-    #             'baudrate':'57600',
+    #             'networkAdress': '2318174941',
+    #             'baudrate':'230400',
     #             'extraCommands':['ATS108=20']}
+    modesettings = {'networkType':'pmp', 
+                'workMode': 'slave',
+                'unitAddress':'5',
+                'networkAdress': '2318174941',
+                'wirelessRate':'276480',
+                'baudrate':'230400',
+                'extraCommands':['ATS108=20']}
     # modesettings = {'networkType':'pmp', 
     #             'workMode': 'slave',
     #             'unitAddress':'11',
