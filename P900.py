@@ -186,7 +186,11 @@ class P900(object):
             if modesettings.has_key('wirelessRate'):
                 wirelessRateCommand = 'ATS103='+ wirelessRateTable[modesettings['wirelessRate']]
             if modesettings.has_key('networkAdress'):
-                networkAdressCommand = 'ATS104='+ modesettings['networkAdress']
+                address = int(modesettings['networkAdress'])
+                if address <= 4294967295:
+                    networkAdressCommand = 'ATS104='+ modesettings['networkAdress']
+                else:
+                    raise Exception('This address is invalid')
             
             
             commandlines = [factorCommand]
@@ -234,8 +238,8 @@ class P900(object):
 
         
 if __name__ =='__main__':
-    import argparse
-    import json
+    # import argparse
+    # import json
     # parser = argparse.ArgumentParser(description='Retrive and configure P900')
     # parser.add_argument('comport', type=int,
     #                 help='an integer for the serial port')
@@ -247,25 +251,24 @@ if __name__ =='__main__':
     #                 help='config file')
     
     # aP900 = P900(2,{'baudrate':57600})
-    aP900 = P900(3,{'baudrate':115200})
-    # modesettings = {'networkType':'pmp', 
-    #             'workMode': 'master',
-    #             'wirelessRate':'276480',
-    #             'networkAdress': '2318174941',
-    #             'baudrate':'230400',
-    #             'extraCommands':['ATS108=20']}
+    aP900 = P900(3,{'baudrate':57600})
     modesettings = {'networkType':'pmp', 
-                'workMode': 'slave',
-                'unitAddress':'5',
-                'networkAdress': '2318174941',
-                'wirelessRate':'276480',
-                'baudrate':'230400',
-                'extraCommands':['ATS108=20']}
+                'workMode': 'master',
+                'wirelessRate':'172800',
+                'networkAdress': '3334567891',
+                'baudrate':'57600',
+                'extraCommands':['ATS108=30']}
+    # modesettings = {'networkType':'pmp', 
+    #             'workMode': 'slave', 
+    #             'unitAddress':'13',
+    #             'networkAdress': '1234567891',
+    #             'wirelessRate':'172800',
+    #             'baudrate':'57600'}
     # modesettings = {'networkType':'pmp', 
     #             'workMode': 'slave',
     #             'unitAddress':'11',
     #             'networkAdress': '1234567123',
-    #             'wirelessRate':'276480',
+    #             'wirelessRate'd:'276480',
     #             'baudrate':'57600',
     #             'extraCommands':['ATS109=9','ATS180=3']}
     

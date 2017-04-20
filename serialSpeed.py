@@ -44,8 +44,9 @@ def speedoutput(args):
                 dataRevQuene5.pop()
         currentRecSpeed5=sum(dataRevQuene5)/len(dataRevQuene5)
 
-        dataSpeed = receivedDataAmount / (timeNow-globalSettings['startTime'])
-        print 'dataSpeed/(rts):%.3f Bytes/s (%.3f);dataAmount: %d'%(dataSpeed,currentRecSpeed5,receivedDataAmount)
+        if ((timeNow-globalSettings['startTime']) !=0 ):
+            dataSpeed = receivedDataAmount / (timeNow-globalSettings['startTime'])
+            print 'dataSpeed/(rts):%.3f Bytes/s (%.3f);dataAmount: %d'%(dataSpeed,currentRecSpeed5,receivedDataAmount)
         lastreceivedDataAmount = receivedDataAmount
         time.sleep(1)
 

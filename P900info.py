@@ -3,7 +3,7 @@ import P900
 import json
 import time 
 if __name__ == '__main__':
-    aP900 = P900.P900(3,{'baudrate':57600})
+    aP900 = P900.P900(3,{'baudrate':115200})
     if aP900.enterConfigMode()==0:
         aP900.dev.write('at&v\r\n')
         time.sleep(3)
