@@ -14,3 +14,4 @@ if __name__ =='__main__':
                 validDevices = validDevices + 1 
                 print device[0],':',device[1],'\n  VID:',device[2]
         print "%d port(s) found"%(validDevices)
+    raw_input("Press the <ENTER> key to continue...")
