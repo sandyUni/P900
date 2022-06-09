@@ -14,5 +14,5 @@ if __name__ == '__main__':
     while True:
         count = count +1
         dev.write(strSent)
-        print count 
+        print(count )
         time.sleep(0.3)

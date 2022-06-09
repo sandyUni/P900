@@ -19,12 +19,12 @@ class P900(object):
         else:
             device = '/dev/ttyUSB'+port
         
-        if settings.has_key('timeout') != True:
+        if 'timeout'  not in  settings:
             settings['timeout'] = 1.5
         try:
             self.dev = serial.Serial(device,settings['baudrate'],timeout = settings['timeout'])
         except:
-            print 'Some errors happens, check your permission for and device avaliability'
+            print('Some errors happens, check your permission for and device avaliability')
         
         self.isInConfigMode = False
 
@@ -40,9 +40,9 @@ class P900(object):
             time.sleep(3)
             inputSize = self.dev.inWaiting()
             data = self.dev.read(inputSize)
-            #print data
+            #print(data)
             if data.find('NO CARRIER\r\nOK')!=-1:
-                print 'shake hands seccessfully.'
+                print('shake hands seccessfully.')
                 self.isInConfigMode = True
                 return 0
             else:
@@ -56,9 +56,9 @@ class P900(object):
             time.sleep(1)
             inputSize = self.dev.inWaiting()
             data = self.dev.read(inputSize)
-            print data
+            print(data)
             if data.find('OK')!=-1:
-                print 'leave config mode seccessfully'
+                print('leave config mode seccessfully')
                 self.isInConfigMode = False
                 return 0
             else:
@@ -124,7 +124,7 @@ class P900(object):
             time.sleep(3)
             inputSize = self.dev.inWaiting()
             data = self.dev.read(inputSize)
-            print data
+            print(data)
 
             commandlines = list()
 
@@ -145,7 +145,7 @@ class P900(object):
                 workmode = modesettings['workMode']
                 if workmode == 'master':
                     factorCommand = 'AT&F7'
-                    if modesettings.has_key('destAddress'):
+                    if 'destAddress' in modesettings:
                         if modesettings['destAddress'] == 'all':
                             destAddressCommand = 'ATS140=65535'
                         else:
@@ -163,29 +163,29 @@ class P900(object):
                 elif workmode == 'slave':
                     factorCommand = 'AT&F2'
                 
-                if modesettings.has_key('channelAccess'):
+                if 'channelAccess'  in modesettings:
                     tmpStr =modesettings['channelAccess'].lower()
                     channelAccessModeCommand = 'ATS244='+channelAccessTable[tmpStr]
                 
-                if modesettings.has_key('repeatInterval'):
+                if 'repeatInterval' in modesettings:
                     repeatIntervalCommand = 'ATS115='+modesettings['repeatInterval']
                 
-                if modesettings.has_key('alohaSlots'):
+                if 'alohaSlots' in modesettings:
                     alohaSlotsCommand = 'ATS214='+modesettings['alohaSlots']
 
-                if modesettings.has_key('tdmaSlots'):
+                if 'tdmaSlots' in modesettings:
                     tdmaSlotsCommand = 'ATS221='+modesettings['tdmaSlots']
 
             if factorCommand is None:
-                print 'not support yet, do nothing'
+                print('not support yet, do nothing')
                 return
-            if modesettings.has_key('baudrate'):
+            if 'baudrate' in modesettings:
                 baudRateCommand = 'ATS102='+baudRateTable[modesettings['baudrate']]
             else:
                 baudRateCommand = 'ATS102='+baudRateTable[str(self.dev.baudrate)]
-            if modesettings.has_key('wirelessRate'):
+            if 'wirelessRate' in  modesettings:
                 wirelessRateCommand = 'ATS103='+ wirelessRateTable[modesettings['wirelessRate']]
-            if modesettings.has_key('networkAdress'):
+            if 'networkAdress' in modesettings:
                 address = int(modesettings['networkAdress'])
                 if address <= 4294967295:
                     networkAdressCommand = 'ATS104='+ modesettings['networkAdress']
@@ -213,7 +213,7 @@ class P900(object):
             if (tdmaSlotsCommand is None) == False:
                 commandlines.append(tdmaSlotsCommand)
             
-            if modesettings.has_key('extraCommands'):
+            if 'extraCommands' in modesettings:
                 extraCommands = '\r\n'.join(modesettings['extraCommands'])+ '\r\n'
                 command = '\r\n'.join(commandlines) +'\r\n'+ extraCommands +'at&w\r\n'
             else:
@@ -223,18 +223,18 @@ class P900(object):
             time.sleep(3)
             inputSize = self.dev.inWaiting()
             data = self.dev.read(inputSize)
-            print data
+            print(data)
 
             self.dev.write('at&v\r\n')
             time.sleep(3)
             inputSize = self.dev.inWaiting()
             data = self.dev.read(inputSize)
-            print data
+            print(data)
 
             self.leaveConfigMode()
             return data
         else:
-            print 'check your device settings'
+            print('check your device settings')
 
         
 if __name__ =='__main__':

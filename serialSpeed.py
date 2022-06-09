@@ -35,7 +35,7 @@ def speedoutput(args):
             transmitStartTime = globalSettings['transmitStartTime']
             totalSpeed = dataTransmited/(timeNow-transmitStartTime)
             currentSpeed5=sum(dataTransmitedQuene5)/len(dataTransmitedQuene5)
-            print 'transmitSpeed/currentSpeed::%.3f Bytes/s (%.3f);dataAmount: %d'%(totalSpeed,currentSpeed5,dataTransmited)
+            print('transmitSpeed/currentSpeed::%.3f Bytes/s (%.3f);dataAmount: %d'%(totalSpeed,currentSpeed5,dataTransmited))
             lastdataTransmited = dataTransmited
         
         receivedDataAmount  = globalSettings['receivedDataAmount']
@@ -46,7 +46,7 @@ def speedoutput(args):
 
         if ((timeNow-globalSettings['startTime']) !=0 ):
             dataSpeed = receivedDataAmount / (timeNow-globalSettings['startTime'])
-            print 'dataSpeed/(rts):%.3f Bytes/s (%.3f);dataAmount: %d'%(dataSpeed,currentRecSpeed5,receivedDataAmount)
+            print('dataSpeed/(rts):%.3f Bytes/s (%.3f);dataAmount: %d'%(dataSpeed,currentRecSpeed5,receivedDataAmount))
         lastreceivedDataAmount = receivedDataAmount
         time.sleep(1)
 
@@ -110,7 +110,7 @@ def transmitThread(args):
                 bufferThreshold = 0
             else:
                 bufferThreshold = 1000
-            # print "out_wait:%d"%(globalSettings['dev'].out_waiting)
+            # print("out_wait:%d"%(globalSettings['dev'].out_waiting))
             if globalSettings['dev'].out_waiting <= bufferThreshold:
                 data = None
                 if blockedTransmit:
@@ -128,7 +128,7 @@ def transmitThread(args):
                             nowtime = time.time()
                             datalen = len(data)
                             sleepTime =max(0.001,float(dataTransmited+datalen)/expectedSpeed - (nowtime-startTime))
-                            # print sleepTime
+                            # print(sleepTime)
                         else:
                             sleepTime = 1.0
                 else:
@@ -174,14 +174,14 @@ def transmitThread(args):
                                     haveDatatoTrans = False
                 if (data is None) == False:
                     dev.write(data)
-                    # print bufferThreshold
+                    # print(bufferThreshold)
                     
                     dataTransmited=dataTransmited + len(data)
                     globalSettings['dataTransmited']=dataTransmited
         elif transmitEnable ==True and haveDatatoTrans == False:
             transmitEnable = False
             globalSettings['datatransmitStarted'] = False
-            print 'data transmitted:%d'%dataTransmited
+            print('data transmitted:%d'%dataTransmited)
             return (0)
         time.sleep(sleepTime)
 
@@ -211,7 +211,7 @@ if __name__ == '__main__':
     parser.add_argument('--random-min',type=float,dest='randomMin',help='the minimum frequency in the randomly-transmit mode')
     parser.add_argument('-z','--zero',dest='zeroBuffer',default= False,action='store_const',                          const=True, help='send new data untill buffer is empty, default: False')
     args = parser.parse_args()
-    # print args
+    # print(args)
     #some argument constraints should be added SS
     if (args.randomMin is None)!=True:
         if args.randomMax is None:
@@ -259,7 +259,7 @@ if __name__ == '__main__':
 
     # convert args to tuple
     argsDictTuple = tuple([vars(args)])
-    print argsDictTuple
+    print(argsDictTuple)
     globalSettings['receivedDataAmount'] = 0 
     thread.start_new_thread(readThread,argsDictTuple)
     

@@ -9,7 +9,7 @@ if __name__ == '__main__':
         time.sleep(3)
         inputSize = aP900.dev.inWaiting()
         data = aP900.dev.read(inputSize)
-        print data
+        print(data)
         aP900.leaveConfigMode()
     else:
         raise Exception('check your device settings')

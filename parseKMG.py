@@ -121,4 +121,4 @@ def human2bytes(s):
 
 
 if __name__ == "__main__":
-    print human2bytes('123k')
+    print(human2bytes('123k'))
